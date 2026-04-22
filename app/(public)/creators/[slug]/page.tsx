@@ -40,14 +40,31 @@ export default async function CreatorProfilePage({ params }: Props) {
   if (!creator) notFound()
 
   const supabase = await createClient()
-  const { data: tagRows } = await supabase
-    .from('creator_tags')
-    .select('specialty_tags(id, name, category, level)')
-    .eq('creator_id', creator.id)
+  const [{ data: tagRows }, { data: courseRows }] = await Promise.all([
+    supabase
+      .from('creator_tags')
+      .select('specialty_tags(id, name, category, level)')
+      .eq('creator_id', creator.id),
+    supabase
+      .from('courses')
+      .select('id, title, tagline, level, published, affiliated_links(slug)')
+      .eq('creator_id', creator.id)
+      .eq('course_type', 'affiliated')
+      .eq('published', true)
+      .order('created_at', { ascending: false }),
+  ])
 
   const tags = (tagRows ?? [])
     .map(row => row.specialty_tags)
     .filter((t): t is NonNullable<typeof t> => t !== null)
+
+  const courses = (courseRows ?? []).map(c => ({
+    id: c.id,
+    title: c.title,
+    tagline: c.tagline,
+    level: c.level,
+    slug: c.affiliated_links?.[0]?.slug ?? null,
+  }))
 
   return (
     <main style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
@@ -108,10 +125,59 @@ export default async function CreatorProfilePage({ params }: Props) {
         </section>
       )}
 
-      {/* Courses section — populated in B11 */}
       <section style={{ marginBottom: '2rem' }}>
         <h2>Courses</h2>
-        <div />
+        {courses.length === 0 ? (
+          <p style={{ color: '#5A5A5A' }}>No courses listed yet.</p>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: '1rem',
+            }}
+          >
+            {courses.map(course => (
+              <article
+                key={course.id}
+                style={{
+                  border: '1px solid #D6CFC6',
+                  borderRadius: '12px',
+                  padding: '1rem',
+                  background: 'white',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem',
+                }}
+              >
+                <h3 style={{ margin: 0 }}>{course.title}</h3>
+                {course.tagline && (
+                  <p style={{ margin: 0, color: '#5A5A5A', fontSize: '0.9rem' }}>{course.tagline}</p>
+                )}
+                {course.level && (
+                  <p style={{ margin: 0, fontSize: '0.85rem', color: '#5A5A5A' }}>Level: {course.level}</p>
+                )}
+                {course.slug && (
+                  <a
+                    href={`/go/${course.slug}`}
+                    style={{
+                      marginTop: 'auto',
+                      padding: '0.5rem 1rem',
+                      background: '#6F7F75',
+                      color: 'white',
+                      borderRadius: '6px',
+                      textDecoration: 'none',
+                      textAlign: 'center',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    View course
+                  </a>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Videos section — populated in B17 */}
