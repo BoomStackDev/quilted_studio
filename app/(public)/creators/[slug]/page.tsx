@@ -40,7 +40,7 @@ export default async function CreatorProfilePage({ params }: Props) {
   if (!creator) notFound()
 
   const supabase = await createClient()
-  const [{ data: { user } }, { data: tagRows }, { data: courseRows }] = await Promise.all([
+  const [{ data: { user } }, { data: tagRows }, { data: courseRows }, { data: videoRows }] = await Promise.all([
     supabase.auth.getUser(),
     supabase
       .from('creator_tags')
@@ -53,6 +53,11 @@ export default async function CreatorProfilePage({ params }: Props) {
       .eq('course_type', 'affiliated')
       .eq('published', true)
       .order('created_at', { ascending: false }),
+    supabase
+      .from('creator_videos')
+      .select('id, youtube_url, title, thumbnail_url, level, position, specialty_tags(id, name)')
+      .eq('creator_id', creator.id)
+      .order('position', { ascending: true }),
   ])
 
   const isAuthed = !!user
@@ -68,6 +73,18 @@ export default async function CreatorProfilePage({ params }: Props) {
     level: c.level,
     slug: c.affiliated_links?.[0]?.slug ?? null,
   }))
+
+  const videos = (videoRows ?? []).map(v => {
+    const tag = Array.isArray(v.specialty_tags) ? v.specialty_tags[0] : v.specialty_tags
+    return {
+      id: v.id,
+      youtube_url: v.youtube_url,
+      title: v.title,
+      thumbnail_url: v.thumbnail_url,
+      level: v.level,
+      tag_name: tag?.name ?? null,
+    }
+  })
 
   return (
     <main style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
@@ -187,10 +204,57 @@ export default async function CreatorProfilePage({ params }: Props) {
         )}
       </section>
 
-      {/* Videos section — populated in B17 */}
       <section style={{ marginBottom: '2rem' }}>
         <h2>Videos</h2>
-        <div />
+        {videos.length === 0 ? (
+          <p style={{ color: '#5A5A5A' }}>No featured videos yet.</p>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: '1rem',
+            }}
+          >
+            {videos.map(video => (
+              <a
+                key={video.id}
+                href={video.youtube_url}
+                target="_blank"
+                rel="noreferrer"
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
+                <article
+                  style={{
+                    border: '1px solid #D6CFC6',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    background: 'white',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  {video.thumbnail_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={video.thumbnail_url}
+                      alt={video.title ?? ''}
+                      style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'cover', display: 'block' }}
+                    />
+                  )}
+                  <div style={{ padding: '0.75rem' }}>
+                    <p style={{ margin: 0, fontWeight: 600 }}>{video.title ?? '(Untitled)'}</p>
+                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#5A5A5A' }}>
+                      {video.tag_name && `${video.tag_name}`}
+                      {video.tag_name && video.level && ' · '}
+                      {video.level}
+                    </p>
+                  </div>
+                </article>
+              </a>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   )
