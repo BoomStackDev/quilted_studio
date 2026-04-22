@@ -10,7 +10,7 @@ export default async function StudentDashboardPage() {
 
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
-  const [{ data: clicksData }, { data: savedData }] = await Promise.all([
+  const [{ data: clicksData }, { data: savedData }, { data: savedCoursesData }] = await Promise.all([
     supabase
       .from('affiliated_clicks')
       .select('id, course_id, clicked_at, courses(title, tagline), affiliated_links(slug)')
@@ -21,6 +21,11 @@ export default async function StudentDashboardPage() {
       .from('student_affiliated_courses')
       .select('course_id')
       .eq('student_id', user.id),
+    supabase
+      .from('student_affiliated_courses')
+      .select('id, course_id, saved_at, courses(title, tagline, level, affiliated_links(slug))')
+      .eq('student_id', user.id)
+      .order('saved_at', { ascending: false }),
   ])
 
   const clicks = (clicksData ?? []).map(row => {
@@ -38,11 +43,30 @@ export default async function StudentDashboardPage() {
 
   const savedCourseIds = (savedData ?? []).map(s => s.course_id)
 
+  const savedCourses = (savedCoursesData ?? []).map(row => {
+    const course = Array.isArray(row.courses) ? row.courses[0] : row.courses
+    const link = course
+      ? Array.isArray(course.affiliated_links)
+        ? course.affiliated_links[0]
+        : course.affiliated_links
+      : null
+    return {
+      id: row.id,
+      course_id: row.course_id,
+      title: course?.title ?? 'Course',
+      tagline: course?.tagline ?? null,
+      level: course?.level ?? null,
+      slug: link?.slug ?? null,
+      saved_at: row.saved_at,
+    }
+  })
+
   return (
     <StudentDashboard
       email={user.email ?? ''}
       clicks={clicks}
       savedCourseIds={savedCourseIds}
+      savedCourses={savedCourses}
     />
   )
 }
