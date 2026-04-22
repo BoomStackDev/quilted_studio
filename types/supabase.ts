@@ -345,6 +345,7 @@ export type Database = {
           admin_notes: string | null
           badge: string | null
           bio: string | null
+          confirmed_commission: boolean | null
           created_at: string | null
           creator_type: string
           display_name: string | null
@@ -366,6 +367,7 @@ export type Database = {
           admin_notes?: string | null
           badge?: string | null
           bio?: string | null
+          confirmed_commission?: boolean | null
           created_at?: string | null
           creator_type?: string
           display_name?: string | null
@@ -387,6 +389,7 @@ export type Database = {
           admin_notes?: string | null
           badge?: string | null
           bio?: string | null
+          confirmed_commission?: boolean | null
           created_at?: string | null
           creator_type?: string
           display_name?: string | null
