@@ -354,6 +354,7 @@ export type Database = {
           instagram_url: string | null
           photo_url: string | null
           published: boolean | null
+          slug: string | null
           status: string
           stripe_account_id: string | null
           stripe_onboarded: boolean | null
@@ -376,6 +377,7 @@ export type Database = {
           instagram_url?: string | null
           photo_url?: string | null
           published?: boolean | null
+          slug?: string | null
           status?: string
           stripe_account_id?: string | null
           stripe_onboarded?: boolean | null
@@ -398,6 +400,7 @@ export type Database = {
           instagram_url?: string | null
           photo_url?: string | null
           published?: boolean | null
+          slug?: string | null
           status?: string
           stripe_account_id?: string | null
           stripe_onboarded?: boolean | null
