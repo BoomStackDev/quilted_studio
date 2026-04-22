@@ -21,7 +21,6 @@ const statusLabels: Record<string, string> = {
 
 export default function OnboardingChecklist({ data }: { data: ChecklistData }) {
   const [commissionConfirmed, setCommissionConfirmed] = useState(data.commissionConfirmed)
-  const [loading, setLoading] = useState(false)
   const [submitLoading, setSubmitLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(
@@ -34,19 +33,6 @@ export default function OnboardingChecklist({ data }: { data: ChecklistData }) {
     commissionConfirmed
 
   const canSubmit = allComplete && data.status === 'approved_gate1'
-
-  async function handleCommissionConfirm() {
-    setLoading(true)
-    setError(null)
-    const res = await fetch('/api/creator/commission-confirmed', { method: 'POST' })
-    if (res.ok) {
-      setCommissionConfirmed(true)
-    } else {
-      const d = await res.json()
-      setError(d.error ?? 'Failed to confirm')
-    }
-    setLoading(false)
-  }
 
   async function handleSubmitForReview() {
     setSubmitLoading(true)
@@ -99,11 +85,7 @@ export default function OnboardingChecklist({ data }: { data: ChecklistData }) {
           description="Set up Quilted Studio as an affiliate in your platform with a minimum 90-day cookie duration."
           action={
             !commissionConfirmed
-              ? {
-                  label: loading ? 'Saving...' : 'I have completed this step',
-                  onClick: handleCommissionConfirm,
-                  disabled: loading,
-                }
+              ? { label: 'View setup instructions', href: '/dashboard/creator/commission-setup' }
               : undefined
           }
         />
