@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import SignOutButton from './SignOutButton'
 
 export default async function StudentDashboardPage() {
   const supabase = await createClient()
@@ -11,6 +12,9 @@ export default async function StudentDashboardPage() {
     <main style={{ padding: '2rem' }}>
       <h1>Student Dashboard</h1>
       <p>Signed in as: {user.email}</p>
+      <div style={{ marginTop: '1rem' }}>
+        <SignOutButton />
+      </div>
     </main>
   )
 }
