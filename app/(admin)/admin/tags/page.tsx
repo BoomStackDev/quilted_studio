@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import ApplicationQueue from './ApplicationQueue'
+import TagManager from './TagManager'
 
-export default async function AdminPage() {
+export default async function TagsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -18,18 +18,17 @@ export default async function AdminPage() {
 
   if (profile?.role !== 'admin') redirect('/auth/signin')
 
-  const { data: applications } = await adminSupabase
-    .from('creator_applications')
+  const { data: tags } = await adminSupabase
+    .from('specialty_tags')
     .select('*')
-    .order('submitted_at', { ascending: false })
+    .order('category', { ascending: true })
+    .order('name', { ascending: true })
 
   return (
     <main style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
-      <h1>Admin — Application Queue</h1>
-      <p style={{ margin: '0 0 1rem' }}>
-        <a href="/admin/tags" style={{ color: '#6F7F75' }}>Manage tags →</a>
-      </p>
-      <ApplicationQueue applications={applications ?? []} />
+      <a href="/admin" style={{ fontSize: '0.9rem', color: '#6F7F75' }}>← Back to admin</a>
+      <h1 style={{ marginTop: '1rem' }}>Admin — Tag Management</h1>
+      <TagManager tags={tags ?? []} />
     </main>
   )
 }
