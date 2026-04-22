@@ -26,8 +26,9 @@ export default async function AdminPage() {
   return (
     <main style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
       <h1>Admin — Application Queue</h1>
-      <p style={{ margin: '0 0 1rem' }}>
+      <p style={{ margin: '0 0 1rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
         <a href="/admin/tags" style={{ color: '#6F7F75' }}>Manage tags →</a>
+        <a href="/admin/links" style={{ color: '#6F7F75' }}>Link health →</a>
       </p>
       <ApplicationQueue applications={applications ?? []} />
     </main>
