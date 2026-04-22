@@ -40,7 +40,8 @@ export default async function CreatorProfilePage({ params }: Props) {
   if (!creator) notFound()
 
   const supabase = await createClient()
-  const [{ data: tagRows }, { data: courseRows }] = await Promise.all([
+  const [{ data: { user } }, { data: tagRows }, { data: courseRows }] = await Promise.all([
+    supabase.auth.getUser(),
     supabase
       .from('creator_tags')
       .select('specialty_tags(id, name, category, level)')
@@ -53,6 +54,8 @@ export default async function CreatorProfilePage({ params }: Props) {
       .eq('published', true)
       .order('created_at', { ascending: false }),
   ])
+
+  const isAuthed = !!user
 
   const tags = (tagRows ?? [])
     .map(row => row.specialty_tags)
@@ -159,7 +162,11 @@ export default async function CreatorProfilePage({ params }: Props) {
                 )}
                 {course.slug && (
                   <a
-                    href={`/go/${course.slug}`}
+                    href={
+                      isAuthed
+                        ? `/go/${course.slug}`
+                        : `/auth/signin?next=${encodeURIComponent(`/go/${course.slug}`)}`
+                    }
                     style={{
                       marginTop: 'auto',
                       padding: '0.5rem 1rem',

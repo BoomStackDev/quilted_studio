@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { brand } from '@/lib/brand.config'
 import SignInForm from './SignInForm'
 
@@ -10,7 +11,9 @@ export default function SignInPage() {
     <main style={{ padding: '2rem', maxWidth: '400px', margin: '0 auto' }}>
       <h1>{brand.name}</h1>
       <p>Enter your email to receive a magic link.</p>
-      <SignInForm />
+      <Suspense fallback={null}>
+        <SignInForm />
+      </Suspense>
     </main>
   )
 }
