@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useMemo } from 'react'
+import VideoCarousel, { type CarouselVideo } from './VideoCarousel'
 
 type TagLite = {
   id: string
@@ -25,11 +26,12 @@ type Props = {
   q: string
   tag: string | null
   level: string | null
+  carouselVideos: CarouselVideo[]
 }
 
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'All Levels'] as const
 
-export default function DirectoryClient({ creators, allTags, q, tag, level }: Props) {
+export default function DirectoryClient({ creators, allTags, q, tag, level, carouselVideos }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -63,6 +65,8 @@ export default function DirectoryClient({ creators, allTags, q, tag, level }: Pr
 
   return (
     <>
+      <VideoCarousel videos={carouselVideos} />
+
       <section style={{ marginBottom: '1.5rem' }}>
         <input
           type="search"

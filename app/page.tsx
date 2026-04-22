@@ -30,7 +30,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     creatorsQuery = creatorsQuery.or(`display_name.ilike.%${search}%,tagline.ilike.%${search}%`)
   }
 
-  const [{ data: creatorsData }, { data: allTagsData }, { data: creatorTagsData }] = await Promise.all([
+  const [{ data: creatorsData }, { data: allTagsData }, { data: creatorTagsData }, { data: videoRows }] = await Promise.all([
     creatorsQuery,
     supabase
       .from('specialty_tags')
@@ -41,6 +41,11 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     supabase
       .from('creator_tags')
       .select('creator_id, specialty_tags(id, name, category, level)'),
+    supabase
+      .from('creator_videos')
+      .select('id, youtube_url, youtube_id, title, thumbnail_url, level, creator_id, tag_id, specialty_tags(name), creators(slug, display_name, published)')
+      .order('created_at', { ascending: false })
+      .limit(12),
   ])
 
   const tagsByCreator = new Map<string, TagLite[]>()
@@ -64,6 +69,24 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     creators = creators.filter(c => c.tags.some(t => t.level === level))
   }
 
+  const carouselVideos = (videoRows ?? [])
+    .map(v => {
+      const creatorRel = Array.isArray(v.creators) ? v.creators[0] : v.creators
+      const tagRel = Array.isArray(v.specialty_tags) ? v.specialty_tags[0] : v.specialty_tags
+      if (!creatorRel?.published) return null
+      return {
+        id: v.id,
+        youtube_url: v.youtube_url,
+        title: v.title,
+        thumbnail_url: v.thumbnail_url,
+        level: v.level,
+        tag_name: tagRel?.name ?? null,
+        creator_slug: creatorRel.slug,
+        creator_name: creatorRel.display_name,
+      }
+    })
+    .filter((v): v is NonNullable<typeof v> => v !== null)
+
   return (
     <main style={{ padding: '2rem', maxWidth: '1100px', margin: '0 auto' }}>
       <header style={{ marginBottom: '2rem' }}>
@@ -76,6 +99,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
         q={q ?? ''}
         tag={tag ?? null}
         level={level ?? null}
+        carouselVideos={carouselVideos}
       />
     </main>
   )
