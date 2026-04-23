@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { brand } from '@/lib/brand.config'
 import DirectoryClient from './DirectoryClient'
+import PublicShell from '@/components/layout/PublicShell'
 
 type SearchParams = Promise<{
   q?: string
@@ -88,19 +89,18 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     .filter((v): v is NonNullable<typeof v> => v !== null)
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '1100px', margin: '0 auto' }}>
-      <header style={{ marginBottom: '2rem' }}>
-        <h1 style={{ margin: 0 }}>{brand.name}</h1>
-        <p style={{ margin: '0.5rem 0 0', color: '#5A5A5A' }}>{brand.tagline}</p>
-      </header>
-      <DirectoryClient
-        creators={creators}
-        allTags={allTagsData ?? []}
-        q={q ?? ''}
-        tag={tag ?? null}
-        level={level ?? null}
-        carouselVideos={carouselVideos}
-      />
-    </main>
+    <PublicShell>
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8">
+        <p className="text-muted-text mb-6">{brand.tagline}</p>
+        <DirectoryClient
+          creators={creators}
+          allTags={allTagsData ?? []}
+          q={q ?? ''}
+          tag={tag ?? null}
+          level={level ?? null}
+          carouselVideos={carouselVideos}
+        />
+      </div>
+    </PublicShell>
   )
 }

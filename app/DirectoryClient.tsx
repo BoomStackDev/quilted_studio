@@ -3,6 +3,8 @@
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useMemo } from 'react'
 import VideoCarousel, { type CarouselVideo } from './VideoCarousel'
+import Card from '@/components/ui/Card'
+import Badge from '@/components/ui/Badge'
 
 type TagLite = {
   id: string
@@ -30,6 +32,10 @@ type Props = {
 }
 
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'All Levels'] as const
+
+const pillActive = 'bg-studio-sage text-white border-studio-sage'
+const pillInactive = 'bg-white text-muted-text border-soft-border hover:border-studio-sage'
+const pillBase = 'rounded-full px-4 py-1.5 text-sm border transition-colors cursor-pointer'
 
 export default function DirectoryClient({ creators, allTags, q, tag, level, carouselVideos }: Props) {
   const router = useRouter()
@@ -67,40 +73,26 @@ export default function DirectoryClient({ creators, allTags, q, tag, level, caro
     <>
       <VideoCarousel videos={carouselVideos} />
 
-      <section style={{ marginBottom: '1.5rem' }}>
+      <section className="mb-6">
         <input
           type="search"
           placeholder="Search by name or tagline..."
           defaultValue={q}
           onChange={e => updateParam('q', e.target.value)}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            fontSize: '1rem',
-            border: '1px solid #D6CFC6',
-            borderRadius: '8px',
-          }}
+          className="w-full px-4 py-2 border border-soft-border rounded-lg bg-white text-ink placeholder-muted-text focus:outline-none focus:ring-2 focus:ring-studio-sage"
         />
       </section>
 
-      <section style={{ marginBottom: '1rem' }}>
-        <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: '#5A5A5A' }}>Level</p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+      <section className="mb-4">
+        <p className="mb-2 text-xs text-muted-text">Level</p>
+        <div className="flex flex-wrap gap-2">
           {LEVELS.map(lvl => {
             const active = level === lvl
             return (
               <button
                 key={lvl}
                 onClick={() => toggleLevel(lvl)}
-                style={{
-                  padding: '0.3rem 0.75rem',
-                  borderRadius: '9999px',
-                  border: `1px solid ${active ? '#6F7F75' : '#D6CFC6'}`,
-                  background: active ? '#6F7F75' : 'white',
-                  color: active ? 'white' : '#1F1F1F',
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                }}
+                className={`${pillBase} ${active ? pillActive : pillInactive}`}
               >
                 {lvl}
               </button>
@@ -110,24 +102,16 @@ export default function DirectoryClient({ creators, allTags, q, tag, level, caro
       </section>
 
       {uniqueTagNames.length > 0 && (
-        <section style={{ marginBottom: '1.5rem' }}>
-          <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: '#5A5A5A' }}>Specialty</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <section className="mb-6">
+          <p className="mb-2 text-xs text-muted-text">Specialty</p>
+          <div className="flex flex-wrap gap-2">
             {uniqueTagNames.map(t => {
               const active = tag === t.id
               return (
                 <button
                   key={t.id}
                   onClick={() => toggleTag(t.id)}
-                  style={{
-                    padding: '0.3rem 0.75rem',
-                    borderRadius: '9999px',
-                    border: `1px solid ${active ? '#6F7F75' : '#D6CFC6'}`,
-                    background: active ? '#6F7F75' : 'white',
-                    color: active ? 'white' : '#1F1F1F',
-                    fontSize: '0.85rem',
-                    cursor: 'pointer',
-                  }}
+                  className={`${pillBase} ${active ? pillActive : pillInactive}`}
                 >
                   {t.name}
                 </button>
@@ -137,91 +121,48 @@ export default function DirectoryClient({ creators, allTags, q, tag, level, caro
         </section>
       )}
 
-      <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: '#5A5A5A' }}>
+      <p className="mb-4 text-sm text-muted-text">
         {creators.length} {creators.length === 1 ? 'creator' : 'creators'}
       </p>
 
       {creators.length === 0 ? (
-        <p style={{ padding: '2rem', textAlign: 'center', color: '#5A5A5A' }}>
-          No creators match these filters. Try clearing one.
-        </p>
+        <p className="text-center py-16 text-muted-text">No creators match these filters. Try clearing one.</p>
       ) : (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-            gap: '1rem',
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {creators.map(c => {
             const displayedTags = c.tags.slice(0, 3)
             const cardContent = (
-              <article
-                style={{
-                  border: '1px solid #D6CFC6',
-                  borderRadius: '12px',
-                  padding: '1rem',
-                  background: 'white',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.5rem',
-                }}
-              >
-                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col gap-3">
+                <div className="flex gap-3 items-center">
                   {c.photo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={c.photo_url}
                       alt={c.display_name ?? ''}
-                      style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover' }}
+                      className="w-16 h-16 rounded-full object-cover"
                     />
                   ) : (
-                    <div
-                      style={{
-                        width: '56px',
-                        height: '56px',
-                        borderRadius: '50%',
-                        background: '#EAE4DB',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '1.25rem',
-                        fontWeight: 600,
-                        color: '#5A5A5A',
-                      }}
-                    >
+                    <div className="w-16 h-16 rounded-full bg-paper-warm-gray flex items-center justify-center text-xl font-medium text-muted-text">
                       {(c.display_name ?? '?').slice(0, 1).toUpperCase()}
                     </div>
                   )}
-                  <h3 style={{ margin: 0, fontSize: '1.05rem' }}>{c.display_name}</h3>
+                  <h3 className="font-display text-lg text-ink m-0">{c.display_name}</h3>
                 </div>
                 {c.tagline && (
-                  <p style={{ margin: 0, fontSize: '0.9rem', color: '#5A5A5A' }}>{c.tagline}</p>
+                  <p className="text-sm text-muted-text m-0">{c.tagline}</p>
                 )}
                 {displayedTags.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: 'auto' }}>
+                  <div className="flex flex-wrap gap-1.5 mt-auto">
                     {displayedTags.map(t => (
-                      <span
-                        key={t.id}
-                        style={{
-                          padding: '0.15rem 0.5rem',
-                          fontSize: '0.75rem',
-                          borderRadius: '9999px',
-                          background: '#F7F4EF',
-                          border: '1px solid #EAE4DB',
-                        }}
-                      >
-                        {t.name}
-                      </span>
+                      <Badge key={t.id} variant="sage">{t.name}</Badge>
                     ))}
                   </div>
                 )}
-              </article>
+              </Card>
             )
 
             return c.slug ? (
-              <a key={c.id} href={`/creators/${c.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <a key={c.id} href={`/creators/${c.slug}`} className="no-underline hover:no-underline text-ink">
                 {cardContent}
               </a>
             ) : (

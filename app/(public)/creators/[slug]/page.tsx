@@ -2,6 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { brand } from '@/lib/brand.config'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import PublicShell from '@/components/layout/PublicShell'
+import PageShell from '@/components/ui/PageShell'
+import Card from '@/components/ui/Card'
+import Badge from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -87,175 +92,133 @@ export default async function CreatorProfilePage({ params }: Props) {
   })
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
-      <header style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', marginBottom: '2rem' }}>
-        {creator.photo_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={creator.photo_url}
-            alt={creator.display_name ?? ''}
-            style={{ width: '160px', height: '160px', objectFit: 'cover', borderRadius: '12px', flexShrink: 0 }}
-          />
-        )}
-        <div style={{ flex: 1 }}>
-          <h1 style={{ margin: 0 }}>{creator.display_name}</h1>
-          {creator.tagline && (
-            <p style={{ margin: '0.5rem 0 0', fontSize: '1.1rem', color: '#5A5A5A' }}>{creator.tagline}</p>
+    <PublicShell>
+      <PageShell width="lg">
+        <header className="flex gap-6 items-start mb-8">
+          {creator.photo_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={creator.photo_url}
+              alt={creator.display_name ?? ''}
+              className="w-32 h-32 rounded-full object-cover border-2 border-soft-border flex-shrink-0"
+            />
           )}
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-            {creator.youtube_url && (
-              <a href={creator.youtube_url} target="_blank" rel="noreferrer" style={{ color: '#6F7F75' }}>YouTube</a>
+          <div className="flex-1">
+            <h1 className="font-display text-3xl text-ink m-0">{creator.display_name}</h1>
+            {creator.tagline && (
+              <p className="text-muted-text mt-1">{creator.tagline}</p>
             )}
-            {creator.instagram_url && (
-              <a href={creator.instagram_url} target="_blank" rel="noreferrer" style={{ color: '#6F7F75' }}>Instagram</a>
-            )}
-            {creator.website_url && (
-              <a href={creator.website_url} target="_blank" rel="noreferrer" style={{ color: '#6F7F75' }}>Website</a>
-            )}
+            <div className="flex gap-4 mt-3 text-sm text-studio-sage flex-wrap">
+              {creator.youtube_url && (
+                <a href={creator.youtube_url} target="_blank" rel="noreferrer">YouTube</a>
+              )}
+              {creator.instagram_url && (
+                <a href={creator.instagram_url} target="_blank" rel="noreferrer">Instagram</a>
+              )}
+              {creator.website_url && (
+                <a href={creator.website_url} target="_blank" rel="noreferrer">Website</a>
+              )}
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {creator.bio && (
-        <section style={{ marginBottom: '2rem' }}>
-          <h2>About</h2>
-          <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{creator.bio}</p>
-        </section>
-      )}
-
-      {tags.length > 0 && (
-        <section style={{ marginBottom: '2rem' }}>
-          <h2>Specialties</h2>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-            {tags.map(tag => (
-              <span
-                key={tag.id}
-                style={{
-                  padding: '0.25rem 0.75rem',
-                  border: '1px solid #D6CFC6',
-                  borderRadius: '9999px',
-                  background: '#F7F4EF',
-                  fontSize: '0.85rem',
-                }}
-              >
-                {tag.name}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section style={{ marginBottom: '2rem' }}>
-        <h2>Courses</h2>
-        {courses.length === 0 ? (
-          <p style={{ color: '#5A5A5A' }}>No courses listed yet.</p>
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: '1rem',
-            }}
-          >
-            {courses.map(course => (
-              <article
-                key={course.id}
-                style={{
-                  border: '1px solid #D6CFC6',
-                  borderRadius: '12px',
-                  padding: '1rem',
-                  background: 'white',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.5rem',
-                }}
-              >
-                <h3 style={{ margin: 0 }}>{course.title}</h3>
-                {course.tagline && (
-                  <p style={{ margin: 0, color: '#5A5A5A', fontSize: '0.9rem' }}>{course.tagline}</p>
-                )}
-                {course.level && (
-                  <p style={{ margin: 0, fontSize: '0.85rem', color: '#5A5A5A' }}>Level: {course.level}</p>
-                )}
-                {course.slug && (
-                  <a
-                    href={
-                      isAuthed
-                        ? `/go/${course.slug}`
-                        : `/auth/signin?next=${encodeURIComponent(`/go/${course.slug}`)}`
-                    }
-                    style={{
-                      marginTop: 'auto',
-                      padding: '0.5rem 1rem',
-                      background: '#6F7F75',
-                      color: 'white',
-                      borderRadius: '6px',
-                      textDecoration: 'none',
-                      textAlign: 'center',
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    View course
-                  </a>
-                )}
-              </article>
-            ))}
-          </div>
+        {creator.bio && (
+          <section className="mb-8">
+            <h2 className="font-display text-2xl text-ink mb-4">About</h2>
+            <Card>
+              <p className="text-ink leading-relaxed whitespace-pre-wrap m-0">{creator.bio}</p>
+            </Card>
+          </section>
         )}
-      </section>
 
-      <section style={{ marginBottom: '2rem' }}>
-        <h2>Videos</h2>
-        {videos.length === 0 ? (
-          <p style={{ color: '#5A5A5A' }}>No featured videos yet.</p>
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: '1rem',
-            }}
-          >
-            {videos.map(video => (
-              <a
-                key={video.id}
-                href={video.youtube_url}
-                target="_blank"
-                rel="noreferrer"
-                style={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <article
-                  style={{
-                    border: '1px solid #D6CFC6',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    background: 'white',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  {video.thumbnail_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={video.thumbnail_url}
-                      alt={video.title ?? ''}
-                      style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'cover', display: 'block' }}
-                    />
+        {tags.length > 0 && (
+          <section className="mb-8">
+            <h2 className="font-display text-2xl text-ink mb-4">Specialties</h2>
+            <div className="flex flex-wrap gap-2">
+              {tags.map(tag => (
+                <Badge key={tag.id} variant="sage">{tag.name}</Badge>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="mb-8">
+          <h2 className="font-display text-2xl text-ink mb-4">Courses</h2>
+          {courses.length === 0 ? (
+            <p className="text-muted-text text-sm">No courses listed yet.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {courses.map(course => (
+                <Card key={course.id} className="hover:shadow-md transition-shadow h-full flex flex-col gap-2">
+                  <h3 className="font-medium text-ink m-0">{course.title}</h3>
+                  {course.tagline && (
+                    <p className="text-sm text-muted-text m-0">{course.tagline}</p>
                   )}
-                  <div style={{ padding: '0.75rem' }}>
-                    <p style={{ margin: 0, fontWeight: 600 }}>{video.title ?? '(Untitled)'}</p>
-                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#5A5A5A' }}>
-                      {video.tag_name && `${video.tag_name}`}
-                      {video.tag_name && video.level && ' · '}
-                      {video.level}
-                    </p>
-                  </div>
-                </article>
-              </a>
-            ))}
-          </div>
-        )}
-      </section>
-    </main>
+                  {course.level && (
+                    <div>
+                      <Badge variant="gray">{course.level}</Badge>
+                    </div>
+                  )}
+                  {course.slug && (
+                    <a
+                      href={
+                        isAuthed
+                          ? `/go/${course.slug}`
+                          : `/auth/signin?next=${encodeURIComponent(`/go/${course.slug}`)}`
+                      }
+                      className="mt-auto no-underline hover:no-underline"
+                    >
+                      <Button variant="primary" size="sm" className="w-full">
+                        View course
+                      </Button>
+                    </a>
+                  )}
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="mb-8">
+          <h2 className="font-display text-2xl text-ink mb-4">Videos</h2>
+          {videos.length === 0 ? (
+            <p className="text-muted-text text-sm">No featured videos yet.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {videos.map(video => (
+                <a
+                  key={video.id}
+                  href={video.youtube_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="no-underline hover:no-underline text-ink"
+                >
+                  <article className="rounded-xl overflow-hidden border border-soft-border bg-white hover:shadow-md transition-shadow">
+                    {video.thumbnail_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={video.thumbnail_url}
+                        alt={video.title ?? ''}
+                        className="w-full aspect-video object-cover block"
+                      />
+                    )}
+                    <div className="p-3">
+                      <p className="font-medium text-ink m-0">{video.title ?? '(Untitled)'}</p>
+                      {(video.tag_name || video.level) && (
+                        <p className="text-xs text-muted-text mt-1">
+                          {video.tag_name}
+                          {video.tag_name && video.level && ' · '}
+                          {video.level}
+                        </p>
+                      )}
+                    </div>
+                  </article>
+                </a>
+              ))}
+            </div>
+          )}
+        </section>
+      </PageShell>
+    </PublicShell>
   )
 }

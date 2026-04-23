@@ -1,6 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
+import Input from '@/components/ui/Input'
+import Select from '@/components/ui/Select'
 
 export default function ApplyForm() {
   const [submitted, setSubmitted] = useState(false)
@@ -39,88 +43,70 @@ export default function ApplyForm() {
 
   if (submitted) {
     return (
-      <div>
-        <h2>Application received</h2>
-        <p>
+      <Card>
+        <h2 className="font-display text-2xl text-ink mb-2">Application received</h2>
+        <p className="text-ink">
           Thanks for applying. We review every application personally and will
           be in touch within a few days.
         </p>
-      </div>
+      </Card>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      <div>
-        <label htmlFor="name">Your name *</label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          required
-          style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-        />
-      </div>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <Input
+        id="name"
+        name="name"
+        type="text"
+        label="Your name *"
+        required
+      />
 
-      <div>
-        <label htmlFor="email">Email address *</label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-        />
-      </div>
+      <Input
+        id="email"
+        name="email"
+        type="email"
+        label="Email address *"
+        required
+      />
 
-      <div>
-        <label htmlFor="youtube_url">YouTube channel URL *</label>
-        <input
-          id="youtube_url"
-          name="youtube_url"
-          type="url"
-          required
-          style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-        />
-      </div>
+      <Input
+        id="youtube_url"
+        name="youtube_url"
+        type="url"
+        label="YouTube channel URL *"
+        required
+      />
 
-      <div>
-        <label htmlFor="primary_platform">Where do you currently host your courses? *</label>
-        <select
-          id="primary_platform"
-          name="primary_platform"
-          required
-          style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-        >
-          <option value="">Select one</option>
-          <option value="Kajabi">Kajabi</option>
-          <option value="Thinkific">Thinkific</option>
-          <option value="YouTube only">YouTube only — no course platform</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
+      <Select
+        id="primary_platform"
+        name="primary_platform"
+        label="Where do you currently host your courses? *"
+        required
+        defaultValue=""
+      >
+        <option value="">Select one</option>
+        <option value="Kajabi">Kajabi</option>
+        <option value="Thinkific">Thinkific</option>
+        <option value="YouTube only">YouTube only — no course platform</option>
+        <option value="Other">Other</option>
+      </Select>
 
-      <div>
-        <label htmlFor="referral_source">How did you hear about us?</label>
-        <input
-          id="referral_source"
-          name="referral_source"
-          type="text"
-          style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-        />
-      </div>
+      <Input
+        id="referral_source"
+        name="referral_source"
+        type="text"
+        label="How did you hear about us?"
+      />
 
       {error && (
-        <p style={{ color: 'red' }}>{error}</p>
+        <p className="text-sm text-red-600">{error}</p>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        style={{ padding: '0.75rem 1.5rem', cursor: loading ? 'not-allowed' : 'pointer' }}
-      >
-        {loading ? 'Submitting...' : 'Submit application'}
-      </button>
+      <Button type="submit" variant="primary" size="lg" loading={loading} className="self-start">
+        Submit application
+      </Button>
     </form>
   )
 }
