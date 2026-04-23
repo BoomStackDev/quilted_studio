@@ -2,8 +2,19 @@
 
 import { useState } from 'react'
 import type { Database } from '@/types/supabase'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import Textarea from '@/components/ui/Textarea'
+import Badge from '@/components/ui/Badge'
 
 type Application = Database['public']['Tables']['creator_applications']['Row']
+
+const statusVariant: Record<string, 'sage' | 'green' | 'yellow' | 'red' | 'gray'> = {
+  pending: 'sage',
+  approved: 'green',
+  held: 'yellow',
+  rejected: 'red',
+}
 
 export default function ApplicationQueue({ applications }: { applications: Application[] }) {
   const [items, setItems] = useState(applications)
@@ -44,62 +55,92 @@ export default function ApplicationQueue({ applications }: { applications: Appli
 
   return (
     <div>
-      {error && <p style={{ color: 'red', marginBottom: '1rem' }}>{error}</p>}
+      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
-      <h2>Pending ({pending.length})</h2>
-      {pending.length === 0 && <p>No pending applications.</p>}
-      {pending.map(app => (
-        <div key={app.id} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
-          <p><strong>{app.name}</strong> — {app.email}</p>
-          <p>YouTube: <a href={app.youtube_url ?? '#'} target="_blank" rel="noreferrer">{app.youtube_url}</a></p>
-          <p>Platform: {app.primary_platform}</p>
-          <p>Referral: {app.referral_source ?? '—'}</p>
-          <p style={{ fontSize: '0.85rem', color: '#666' }}>
-            Submitted: {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
-          </p>
-          <textarea
-            placeholder="Admin notes (required for Hold)"
-            value={notes[app.id] ?? ''}
-            onChange={e => setNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
-            rows={2}
-            style={{ display: 'block', width: '100%', marginTop: '0.5rem', marginBottom: '0.5rem', padding: '0.5rem' }}
-          />
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              onClick={() => handleAction(app.id, 'approve')}
-              disabled={loadingId === app.id}
-              style={{ padding: '0.5rem 1rem', background: '#6F7F75', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-            >
-              {loadingId === app.id ? '...' : 'Approve'}
-            </button>
-            <button
-              onClick={() => handleAction(app.id, 'hold')}
-              disabled={loadingId === app.id}
-              style={{ padding: '0.5rem 1rem', background: '#6B7C93', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-            >
-              {loadingId === app.id ? '...' : 'Hold'}
-            </button>
-            <button
-              onClick={() => handleAction(app.id, 'reject')}
-              disabled={loadingId === app.id}
-              style={{ padding: '0.5rem 1rem', background: '#c0392b', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-            >
-              {loadingId === app.id ? '...' : 'Reject'}
-            </button>
+      <section className="mb-8">
+        <h2 className="font-display text-2xl text-ink mb-4">Pending ({pending.length})</h2>
+        {pending.length === 0 ? (
+          <Card className="text-muted-text text-center">No pending applications.</Card>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {pending.map(app => (
+              <Card key={app.id} className="border-studio-sage/40">
+                <p className="m-0 text-ink"><strong>{app.name}</strong> — {app.email}</p>
+                {app.youtube_url && (
+                  <p className="m-0 mt-1 text-sm">
+                    YouTube:{' '}
+                    <a href={app.youtube_url} target="_blank" rel="noreferrer" className="text-studio-sage hover:underline">
+                      {app.youtube_url}
+                    </a>
+                  </p>
+                )}
+                <p className="m-0 mt-1 text-sm text-ink">Platform: {app.primary_platform}</p>
+                <p className="m-0 mt-1 text-sm text-ink">Referral: {app.referral_source ?? '—'}</p>
+                <p className="m-0 mt-2 text-xs text-muted-text">
+                  Submitted: {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
+                </p>
+                <div className="mt-3">
+                  <Textarea
+                    placeholder="Admin notes (required for Hold)"
+                    value={notes[app.id] ?? ''}
+                    onChange={e => setNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
+                    rows={2}
+                  />
+                </div>
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handleAction(app.id, 'approve')}
+                    loading={loadingId === app.id}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleAction(app.id, 'hold')}
+                    loading={loadingId === app.id}
+                  >
+                    Hold
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleAction(app.id, 'reject')}
+                    loading={loadingId === app.id}
+                  >
+                    Reject
+                  </Button>
+                </div>
+              </Card>
+            ))}
           </div>
-        </div>
-      ))}
+        )}
+      </section>
 
-      <h2 style={{ marginTop: '2rem' }}>Reviewed ({reviewed.length})</h2>
-      {reviewed.length === 0 && <p>No reviewed applications yet.</p>}
-      {reviewed.map(app => (
-        <div key={app.id} style={{ border: '1px solid #eee', borderRadius: '8px', padding: '1rem', marginBottom: '0.5rem', opacity: 0.7 }}>
-          <p><strong>{app.name}</strong> — {app.email} — <em>{app.status}</em></p>
-          <p style={{ fontSize: '0.85rem', color: '#666' }}>
-            Submitted: {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
-          </p>
-        </div>
-      ))}
+      <section>
+        <h2 className="font-display text-2xl text-ink mb-4">Reviewed ({reviewed.length})</h2>
+        {reviewed.length === 0 ? (
+          <Card className="text-muted-text text-center">No reviewed applications yet.</Card>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {reviewed.map(app => (
+              <Card key={app.id} padding="sm">
+                <div className="flex justify-between items-center gap-3 flex-wrap">
+                  <div>
+                    <p className="m-0 text-ink"><strong>{app.name}</strong> — {app.email}</p>
+                    <p className="m-0 text-xs text-muted-text mt-0.5">
+                      Submitted: {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
+                    </p>
+                  </div>
+                  <Badge variant={statusVariant[app.status] ?? 'gray'}>{app.status}</Badge>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   )
 }

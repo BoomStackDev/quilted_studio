@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import TagManager from './TagManager'
+import AdminShell from '@/components/layout/AdminShell'
 
 export default async function TagsPage() {
   const supabase = await createClient()
@@ -25,10 +26,8 @@ export default async function TagsPage() {
     .order('name', { ascending: true })
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
-      <a href="/admin" style={{ fontSize: '0.9rem', color: '#6F7F75' }}>← Back to admin</a>
-      <h1 style={{ marginTop: '1rem' }}>Admin — Tag Management</h1>
+    <AdminShell title="Tag Management">
       <TagManager tags={tags ?? []} />
-    </main>
+    </AdminShell>
   )
 }

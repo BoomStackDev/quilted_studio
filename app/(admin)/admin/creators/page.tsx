@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import CreatorReviewQueue from './CreatorReviewQueue'
+import AdminShell from '@/components/layout/AdminShell'
 
 export default async function AdminCreatorsPage() {
   const supabase = await createClient()
@@ -61,11 +62,9 @@ export default async function AdminCreatorsPage() {
   })
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
-      <a href="/admin" style={{ fontSize: '0.9rem', color: '#6F7F75' }}>← Back to admin</a>
-      <h1 style={{ marginTop: '1rem' }}>Gate 2 — Profile Review</h1>
-      <p style={{ color: '#5A5A5A' }}>{creators.length} pending</p>
+    <AdminShell title="Gate 2 — Profile Review">
+      <p className="text-muted-text mb-4">{creators.length} pending</p>
       <CreatorReviewQueue creators={creators} />
-    </main>
+    </AdminShell>
   )
 }

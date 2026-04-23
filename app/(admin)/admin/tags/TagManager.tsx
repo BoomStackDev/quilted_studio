@@ -2,6 +2,11 @@
 
 import { useState } from 'react'
 import type { Database } from '@/types/supabase'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import Select from '@/components/ui/Select'
+import Badge from '@/components/ui/Badge'
 
 type Tag = Database['public']['Tables']['specialty_tags']['Row']
 
@@ -111,126 +116,108 @@ export default function TagManager({ tags }: { tags: Tag[] }) {
 
   return (
     <div>
-      <section style={{ border: '1px solid #D6CFC6', borderRadius: '8px', padding: '1rem', marginBottom: '2rem', background: '#F7F4EF' }}>
-        <h2 style={{ marginTop: 0 }}>Add a tag</h2>
-        <form onSubmit={handleAdd} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <input
-            type="text"
-            placeholder="Name"
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            required
-            style={{ flex: '1 1 180px', padding: '0.5rem' }}
-          />
-          <input
-            type="text"
-            placeholder="Category"
-            value={newCategory}
-            onChange={e => setNewCategory(e.target.value)}
-            required
-            style={{ flex: '1 1 180px', padding: '0.5rem' }}
-          />
-          <select
-            value={newLevel}
-            onChange={e => setNewLevel(e.target.value as Level)}
-            style={{ flex: '1 1 140px', padding: '0.5rem' }}
-          >
-            {LEVELS.map(l => (
-              <option key={l} value={l}>{l}</option>
-            ))}
-          </select>
-          <button
+      <Card className="mb-8">
+        <h2 className="font-display text-xl text-ink m-0 mb-4">Add a tag</h2>
+        <form onSubmit={handleAdd} className="flex flex-wrap gap-3 items-end">
+          <div className="flex-1 min-w-[160px]">
+            <Input
+              placeholder="Name"
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="flex-1 min-w-[160px]">
+            <Input
+              placeholder="Category"
+              value={newCategory}
+              onChange={e => setNewCategory(e.target.value)}
+              required
+            />
+          </div>
+          <div className="flex-1 min-w-[140px]">
+            <Select
+              value={newLevel}
+              onChange={e => setNewLevel(e.target.value as Level)}
+            >
+              {LEVELS.map(l => (
+                <option key={l} value={l}>{l}</option>
+              ))}
+            </Select>
+          </div>
+          <Button
             type="submit"
-            disabled={addLoading || !newName || !newCategory}
-            style={{
-              padding: '0.5rem 1rem',
-              background: '#6F7F75',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: addLoading ? 'not-allowed' : 'pointer',
-            }}
+            variant="primary"
+            size="sm"
+            loading={addLoading}
+            disabled={!newName || !newCategory}
           >
-            {addLoading ? 'Adding...' : 'Add tag'}
-          </button>
+            Add tag
+          </Button>
         </form>
-      </section>
+      </Card>
 
-      {error && <p style={{ color: 'red', marginBottom: '1rem' }}>{error}</p>}
+      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
-      {Object.keys(grouped).length === 0 && <p>No tags yet.</p>}
+      {Object.keys(grouped).length === 0 && (
+        <Card className="text-center text-muted-text">No tags yet.</Card>
+      )}
 
       {Object.entries(grouped).map(([category, categoryTags]) => (
-        <section key={category} style={{ marginBottom: '1.5rem' }}>
-          <h2 style={{ borderBottom: '1px solid #D6CFC6', paddingBottom: '0.25rem' }}>{category}</h2>
-          {categoryTags.map(tag => (
-            <div
-              key={tag.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.5rem 0.75rem',
-                borderBottom: '1px solid #EAE4DB',
-                opacity: tag.active === false ? 0.5 : 1,
-              }}
-            >
-              {editingId === tag.id ? (
-                <>
-                  <input
-                    type="text"
-                    value={editName}
-                    onChange={e => setEditName(e.target.value)}
-                    style={{ flex: 1, padding: '0.25rem 0.5rem' }}
-                  />
-                  <button
-                    onClick={() => handleRename(tag.id)}
-                    disabled={loadingId === tag.id}
-                    style={{ padding: '0.25rem 0.75rem', fontSize: '0.9rem' }}
-                  >
-                    {loadingId === tag.id ? '...' : 'Save'}
-                  </button>
-                  <button
-                    onClick={cancelEdit}
-                    disabled={loadingId === tag.id}
-                    style={{ padding: '0.25rem 0.75rem', fontSize: '0.9rem' }}
-                  >
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <>
-                  <span style={{ flex: 1, fontWeight: 600 }}>{tag.name}</span>
-                  <span style={{ fontSize: '0.85rem', color: '#5A5A5A' }}>{tag.level}</span>
-                  <span style={{ fontSize: '0.85rem', color: tag.active === false ? '#c0392b' : '#6F7F75' }}>
-                    {tag.active === false ? 'inactive' : 'active'}
-                  </span>
-                  <button
-                    onClick={() => startEdit(tag)}
-                    disabled={loadingId === tag.id}
-                    style={{ padding: '0.25rem 0.75rem', fontSize: '0.9rem' }}
-                  >
-                    Rename
-                  </button>
-                  <button
-                    onClick={() => handleToggleActive(tag)}
-                    disabled={loadingId === tag.id}
-                    style={{
-                      padding: '0.25rem 0.75rem',
-                      fontSize: '0.9rem',
-                      background: tag.active === false ? '#6F7F75' : '#c0392b',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: loadingId === tag.id ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    {loadingId === tag.id ? '...' : tag.active === false ? 'Reactivate' : 'Deactivate'}
-                  </button>
-                </>
-              )}
-            </div>
-          ))}
+        <section key={category} className="mb-6">
+          <h2 className="font-display text-xl text-ink mb-3 pb-1 border-b border-soft-border">{category}</h2>
+          <div className="flex flex-col">
+            {categoryTags.map(tag => {
+              const isInactive = tag.active === false
+              return (
+                <div
+                  key={tag.id}
+                  className={`flex items-center gap-3 py-2 px-1 border-b border-paper-warm-gray last:border-0 ${isInactive ? 'opacity-60' : ''}`}
+                >
+                  {editingId === tag.id ? (
+                    <>
+                      <div className="flex-1">
+                        <Input
+                          value={editName}
+                          onChange={e => setEditName(e.target.value)}
+                        />
+                      </div>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleRename(tag.id)}
+                        loading={loadingId === tag.id}
+                      >
+                        Save
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={cancelEdit}>
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="flex-1 font-medium text-ink">{tag.name}</span>
+                      <Badge variant="gray">{tag.level}</Badge>
+                      <Badge variant={isInactive ? 'red' : 'green'}>
+                        {isInactive ? 'inactive' : 'active'}
+                      </Badge>
+                      <Button variant="secondary" size="sm" onClick={() => startEdit(tag)} disabled={loadingId === tag.id}>
+                        Rename
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleToggleActive(tag)}
+                        loading={loadingId === tag.id}
+                      >
+                        {isInactive ? 'Reactivate' : 'Deactivate'}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </section>
       ))}
     </div>

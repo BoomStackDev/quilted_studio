@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
+import AdminShell from '@/components/layout/AdminShell'
 
 export default async function AdminLinksPage() {
   const supabase = await createClient()
@@ -48,60 +49,57 @@ export default async function AdminLinksPage() {
   const neverCheckedCount = links.filter(l => l.is_healthy === null).length
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '1100px', margin: '0 auto' }}>
-      <a href="/admin" style={{ fontSize: '0.9rem', color: '#6F7F75' }}>← Back to admin</a>
-      <h1 style={{ marginTop: '1rem' }}>Admin — Link Health</h1>
-
-      <p style={{ margin: '0.5rem 0 1.5rem', color: '#5A5A5A' }}>
+    <AdminShell title="Link Health">
+      <p className="text-muted-text mb-4">
         {healthyCount} healthy · {unhealthyCount} unhealthy · {neverCheckedCount} never checked
       </p>
 
       {links.length === 0 ? (
-        <p style={{ color: '#5A5A5A' }}>No affiliated links yet.</p>
+        <p className="text-muted-text">No affiliated links yet.</p>
       ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-          <thead>
-            <tr style={{ textAlign: 'left', borderBottom: '1px solid #D6CFC6' }}>
-              <th style={{ padding: '0.5rem' }}>Status</th>
-              <th style={{ padding: '0.5rem' }}>Course</th>
-              <th style={{ padding: '0.5rem' }}>Creator</th>
-              <th style={{ padding: '0.5rem' }}>Slug</th>
-              <th style={{ padding: '0.5rem' }}>Destination</th>
-              <th style={{ padding: '0.5rem' }}>Last checked</th>
-            </tr>
-          </thead>
-          <tbody>
-            {links.map(link => {
-              const unhealthy = link.is_healthy === false
-              const never = link.is_healthy === null
-              const statusLabel = unhealthy ? 'Unhealthy' : never ? 'Never checked' : 'Healthy'
-              const statusColor = unhealthy ? '#c0392b' : never ? '#5A5A5A' : '#2e7d32'
-              return (
-                <tr
-                  key={link.id}
-                  style={{
-                    borderBottom: '1px solid #EAE4DB',
-                    background: unhealthy ? '#fdecea' : 'transparent',
-                  }}
-                >
-                  <td style={{ padding: '0.5rem', fontWeight: 600, color: statusColor }}>{statusLabel}</td>
-                  <td style={{ padding: '0.5rem' }}>{link.course_title}</td>
-                  <td style={{ padding: '0.5rem' }}>{link.creator_name}</td>
-                  <td style={{ padding: '0.5rem' }}><code>{link.slug}</code></td>
-                  <td style={{ padding: '0.5rem', maxWidth: '280px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    <a href={link.destination_url} target="_blank" rel="noreferrer" style={{ color: '#6F7F75' }}>
-                      {link.destination_url}
-                    </a>
-                  </td>
-                  <td style={{ padding: '0.5rem', color: '#5A5A5A' }}>
-                    {link.last_checked_at ? new Date(link.last_checked_at).toLocaleString() : '—'}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+        <div className="bg-white border border-soft-border rounded-xl overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-paper-warm-gray">
+              <tr className="text-left">
+                <th className="px-3 py-2 font-medium text-muted-text">Status</th>
+                <th className="px-3 py-2 font-medium text-muted-text">Course</th>
+                <th className="px-3 py-2 font-medium text-muted-text">Creator</th>
+                <th className="px-3 py-2 font-medium text-muted-text">Slug</th>
+                <th className="px-3 py-2 font-medium text-muted-text">Destination</th>
+                <th className="px-3 py-2 font-medium text-muted-text">Last checked</th>
+              </tr>
+            </thead>
+            <tbody>
+              {links.map(link => {
+                const unhealthy = link.is_healthy === false
+                const never = link.is_healthy === null
+                const statusLabel = unhealthy ? 'Unhealthy' : never ? 'Never checked' : 'Healthy'
+                const rowClass = unhealthy
+                  ? 'bg-red-50 text-red-700 border-t border-soft-border'
+                  : never
+                    ? 'text-muted-text border-t border-soft-border'
+                    : 'text-ink border-t border-soft-border'
+                return (
+                  <tr key={link.id} className={rowClass}>
+                    <td className="px-3 py-2 font-medium">{statusLabel}</td>
+                    <td className="px-3 py-2">{link.course_title}</td>
+                    <td className="px-3 py-2">{link.creator_name}</td>
+                    <td className="px-3 py-2"><code className="text-xs">{link.slug}</code></td>
+                    <td className="px-3 py-2 max-w-[280px] truncate">
+                      <a href={link.destination_url} target="_blank" rel="noreferrer" className="text-studio-sage hover:underline">
+                        {link.destination_url}
+                      </a>
+                    </td>
+                    <td className="px-3 py-2 text-xs">
+                      {link.last_checked_at ? new Date(link.last_checked_at).toLocaleString() : '—'}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
-    </main>
+    </AdminShell>
   )
 }
