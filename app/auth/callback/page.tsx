@@ -21,6 +21,9 @@ export default function AuthCallbackPage() {
 
     async function run() {
       const params = new URLSearchParams(window.location.search)
+      console.log('[auth/callback] href:', window.location.href)
+      console.log('[auth/callback] query params:', Object.fromEntries(new URLSearchParams(window.location.search)))
+      console.log('[auth/callback] token_hash:', params.get('token_hash'), 'type:', params.get('type'))
       const next = safeNext(params.get('next'))
       const token_hash = params.get('token_hash')
       const type = params.get('type') as EmailOtpType | null
@@ -30,6 +33,7 @@ export default function AuthCallbackPage() {
 
       if (token_hash && type) {
         const { data, error } = await supabase.auth.verifyOtp({ token_hash, type })
+        console.log('[auth/callback] verifyOtp result:', { user: data.session?.user?.id ?? null, error: error?.message ?? null })
         if (error) {
           verifyErrorMessage = error.message
         } else if (data.session?.user) {
