@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import SignOutButton from './SignOutButton'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import Badge from '@/components/ui/Badge'
 
 type Click = {
   id: string
@@ -29,14 +32,12 @@ type Props = {
   savedCourses: SavedCourse[]
 }
 
-export default function StudentDashboard({ email, clicks, savedCourseIds, savedCourses }: Props) {
+export default function StudentDashboard({ clicks, savedCourseIds, savedCourses }: Props) {
   const candidatePrompts = useMemo(() => {
     const saved = new Set(savedCourseIds)
     return clicks.filter(c => !saved.has(c.course_id))
   }, [clicks, savedCourseIds])
 
-  // Start empty so SSR matches a state where localStorage hasn't been read yet.
-  // After mount, filter out dismissed clicks.
   const [prompts, setPrompts] = useState<Click[] | null>(null)
   const [mine, setMine] = useState<SavedCourse[]>(savedCourses)
   const [loadingId, setLoadingId] = useState<string | null>(null)
@@ -66,7 +67,6 @@ export default function StudentDashboard({ email, clicks, savedCourseIds, savedC
 
     if (res.ok) {
       setPrompts(prev => (prev ?? []).filter(c => c.id !== click.id))
-      // Also add to My Other Courses immediately if not already there
       setMine(prev => {
         if (prev.some(m => m.course_id === click.course_id)) return prev
         const optimistic: SavedCourse = {
@@ -88,6 +88,15 @@ export default function StudentDashboard({ email, clicks, savedCourseIds, savedC
     setLoadingId(null)
   }
 
+  function handleNo(click: Click) {
+    try {
+      localStorage.setItem(`dismissed_click_${click.id}`, '1')
+    } catch {
+      // localStorage unavailable — still hide this session
+    }
+    setPrompts(prev => (prev ?? []).filter(c => c.id !== click.id))
+  }
+
   async function handleRemove(course_id: string) {
     setRemovingId(course_id)
     setError(null)
@@ -104,151 +113,96 @@ export default function StudentDashboard({ email, clicks, savedCourseIds, savedC
     setRemovingId(null)
   }
 
-  function handleNo(click: Click) {
-    try {
-      localStorage.setItem(`dismissed_click_${click.id}`, '1')
-    } catch {
-      // localStorage unavailable — still hide this session
-    }
-    setPrompts(prev => (prev ?? []).filter(c => c.id !== click.id))
-  }
-
   const showPrompts = prompts && prompts.length > 0
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '700px', margin: '0 auto' }}>
-      <h1>Student Dashboard</h1>
-      <p style={{ color: '#5A5A5A' }}>Signed in as: {email}</p>
+    <div>
+      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
       {showPrompts && (
-        <section style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-          <h2>Did you purchase?</h2>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
-          {prompts!.map(p => (
-            <article
-              key={p.id}
-              style={{
-                border: '1px solid #D6CFC6',
-                borderRadius: '8px',
-                padding: '1rem',
-                marginBottom: '0.75rem',
-                background: 'white',
-              }}
-            >
-              <p style={{ margin: 0, fontWeight: 600 }}>Did you purchase {p.title}?</p>
-              {p.tagline && (
-                <p style={{ margin: '0.25rem 0 0', color: '#5A5A5A', fontSize: '0.9rem' }}>{p.tagline}</p>
-              )}
-              <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
-                <button
-                  onClick={() => handleYes(p)}
-                  disabled={loadingId === p.id}
-                  style={{
-                    padding: '0.4rem 1rem',
-                    background: '#6F7F75',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: loadingId === p.id ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  {loadingId === p.id ? 'Saving...' : 'Yes'}
-                </button>
-                <button
-                  onClick={() => handleNo(p)}
-                  style={{
-                    padding: '0.4rem 1rem',
-                    background: 'white',
-                    color: '#1F1F1F',
-                    border: '1px solid #D6CFC6',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  No thanks
-                </button>
-              </div>
-            </article>
-          ))}
+        <section className="mb-8">
+          <h2 className="font-display text-2xl text-ink mb-4">Did you purchase?</h2>
+          <div className="flex flex-col gap-3">
+            {prompts!.map(p => (
+              <Card key={p.id}>
+                <div className="flex items-start gap-4">
+                  <div className="flex-1">
+                    <p className="font-medium text-ink m-0">Did you purchase {p.title}?</p>
+                    {p.tagline && (
+                      <p className="text-sm text-muted-text mt-1 m-0">{p.tagline}</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => handleYes(p)}
+                      loading={loadingId === p.id}
+                    >
+                      Yes
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleNo(p)}
+                    >
+                      No thanks
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
         </section>
       )}
 
-      <section style={{ marginTop: '1.5rem' }}>
-        <h2>My Other Courses</h2>
+      <section className="mb-8">
+        <h2 className="font-display text-2xl text-ink mb-4 mt-8">My Other Courses</h2>
         {mine.length === 0 ? (
-          <p style={{ color: '#5A5A5A' }}>
+          <Card className="text-muted-text text-center py-8">
             Courses you purchase through Quilted Studio will appear here.
-          </p>
+          </Card>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div className="flex flex-col gap-3">
             {mine.map(course => (
-              <article
-                key={course.course_id}
-                style={{
-                  border: '1px solid #D6CFC6',
-                  borderRadius: '8px',
-                  padding: '1rem',
-                  background: 'white',
-                  display: 'flex',
-                  gap: '1rem',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontWeight: 600 }}>{course.title}</p>
-                  {course.tagline && (
-                    <p style={{ margin: '0.25rem 0 0', color: '#5A5A5A', fontSize: '0.9rem' }}>
-                      {course.tagline}
-                    </p>
-                  )}
-                  {course.level && (
-                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#5A5A5A' }}>
-                      Level: {course.level}
-                    </p>
-                  )}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {course.slug && (
-                    <a
-                      href={`/go/${course.slug}`}
-                      style={{
-                        padding: '0.3rem 0.75rem',
-                        background: '#6F7F75',
-                        color: 'white',
-                        borderRadius: '6px',
-                        textDecoration: 'none',
-                        textAlign: 'center',
-                        fontSize: '0.85rem',
-                      }}
+              <Card key={course.course_id} className="hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-4">
+                  <div className="flex-1">
+                    <p className="font-medium text-ink m-0">{course.title}</p>
+                    {course.tagline && (
+                      <p className="text-sm text-muted-text mt-1 m-0">{course.tagline}</p>
+                    )}
+                    {course.level && (
+                      <div className="mt-2">
+                        <Badge variant="gray">{course.level}</Badge>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2 flex-shrink-0">
+                    {course.slug && (
+                      <a href={`/go/${course.slug}`} className="no-underline hover:no-underline">
+                        <Button variant="primary" size="sm">View course</Button>
+                      </a>
+                    )}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleRemove(course.course_id)}
+                      loading={removingId === course.course_id}
                     >
-                      View course
-                    </a>
-                  )}
-                  <button
-                    onClick={() => handleRemove(course.course_id)}
-                    disabled={removingId === course.course_id}
-                    style={{
-                      padding: '0.3rem 0.75rem',
-                      background: 'white',
-                      color: '#1F1F1F',
-                      border: '1px solid #D6CFC6',
-                      borderRadius: '6px',
-                      cursor: removingId === course.course_id ? 'not-allowed' : 'pointer',
-                      fontSize: '0.85rem',
-                    }}
-                  >
-                    {removingId === course.course_id ? 'Removing...' : 'Remove'}
-                  </button>
+                      Remove
+                    </Button>
+                  </div>
                 </div>
-              </article>
+              </Card>
             ))}
           </div>
         )}
       </section>
 
-      <div style={{ marginTop: '1.5rem' }}>
+      <div className="mt-8">
         <SignOutButton />
       </div>
-    </main>
+    </div>
   )
 }

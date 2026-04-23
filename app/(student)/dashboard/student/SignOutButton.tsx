@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import Button from '@/components/ui/Button'
 
 export default function SignOutButton() {
   const router = useRouter()
@@ -17,20 +18,8 @@ export default function SignOutButton() {
   }
 
   return (
-    <button
-      onClick={handleSignOut}
-      disabled={loading}
-      style={{
-        padding: '0.5rem 1rem',
-        fontSize: '0.9rem',
-        background: '#6B7C93',
-        color: 'white',
-        border: 'none',
-        borderRadius: '6px',
-        cursor: loading ? 'not-allowed' : 'pointer',
-      }}
-    >
-      {loading ? 'Signing out...' : 'Sign out'}
-    </button>
+    <Button variant="ghost" size="sm" onClick={handleSignOut} loading={loading}>
+      Sign out
+    </Button>
   )
 }

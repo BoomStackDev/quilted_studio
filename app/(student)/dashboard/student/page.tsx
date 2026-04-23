@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import StudentDashboard from './StudentDashboard'
+import DashboardShell from '@/components/layout/DashboardShell'
 
 export default async function StudentDashboardPage() {
   const supabase = await createClient()
@@ -62,11 +63,13 @@ export default async function StudentDashboardPage() {
   })
 
   return (
-    <StudentDashboard
-      email={user.email ?? ''}
-      clicks={clicks}
-      savedCourseIds={savedCourseIds}
-      savedCourses={savedCourses}
-    />
+    <DashboardShell title="My Dashboard" userEmail={user.email ?? undefined}>
+      <StudentDashboard
+        email={user.email ?? ''}
+        clicks={clicks}
+        savedCourseIds={savedCourseIds}
+        savedCourses={savedCourses}
+      />
+    </DashboardShell>
   )
 }
