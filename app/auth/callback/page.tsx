@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import type { Session } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import PageShell from '@/components/ui/PageShell'
 
@@ -15,16 +16,13 @@ export default function AuthCallbackPage() {
   const router = useRouter()
 
   useEffect(() => {
+    const supabase = createClient()
     let cancelled = false
+    let settled = false
 
-    async function run() {
-      const supabase = createClient()
-
-      // Implicit flow: the browser client detects the access_token in the URL
-      // hash and sets the session. getSession returns it once available.
-      const { data: { session } } = await supabase.auth.getSession()
-
-      if (cancelled) return
+    async function finish(session: Session | null) {
+      if (cancelled || settled) return
+      settled = true
 
       const params = new URLSearchParams(window.location.search)
       const next = safeNext(params.get('next'))
@@ -44,10 +42,28 @@ export default function AuthCallbackPage() {
       router.replace(next)
     }
 
-    run()
+    // Fires when the browser SDK finishes processing the #access_token= hash
+    // (event: 'SIGNED_IN'). Also fires with INITIAL_SESSION which we ignore
+    // unless it already has a session.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
+        finish(session)
+      }
+    })
+
+    // Covers the race where the hash was processed before we subscribed —
+    // SIGNED_IN would not fire again.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) finish(session)
+    })
+
+    // Give the SDK up to 5s to process the hash; otherwise treat as failure.
+    const timeout = setTimeout(() => finish(null), 5000)
 
     return () => {
       cancelled = true
+      subscription.unsubscribe()
+      clearTimeout(timeout)
     }
   }, [router])
 
