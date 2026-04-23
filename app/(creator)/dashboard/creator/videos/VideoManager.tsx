@@ -2,6 +2,10 @@
 
 import { useState } from 'react'
 import type { Database } from '@/types/supabase'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import Select from '@/components/ui/Select'
 
 type Video = Database['public']['Tables']['creator_videos']['Row']
 type Tag = Pick<Database['public']['Tables']['specialty_tags']['Row'], 'id' | 'name' | 'category' | 'level'>
@@ -69,7 +73,6 @@ export default function VideoManager({
     const res = await fetch(`/api/creator/videos/${id}`, { method: 'DELETE' })
 
     if (res.ok) {
-      // Re-number positions locally to match server reorder
       setVideos(prev =>
         prev
           .filter(v => v.id !== id)
@@ -83,153 +86,111 @@ export default function VideoManager({
     setDeletingId(null)
   }
 
-  const inputStyle: React.CSSProperties = {
-    display: 'block',
-    width: '100%',
-    padding: '0.5rem',
-    marginTop: '0.25rem',
-  }
-
   return (
-    <div style={{ marginTop: '1.5rem' }}>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div className="flex flex-col gap-4">
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <p style={{ fontSize: '0.9rem', color: '#5A5A5A' }}>
-        {videos.length} of 3 videos
-      </p>
+      <p className="text-sm text-muted-text m-0">{videos.length} of 3 videos</p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+      <div className="flex flex-col gap-3">
         {videos.map(video => {
           const tag = extractTag(video)
           return (
-            <article
-              key={video.id}
-              style={{
-                border: '1px solid #D6CFC6',
-                borderRadius: '8px',
-                padding: '0.75rem',
-                background: 'white',
-                display: 'flex',
-                gap: '0.75rem',
-                alignItems: 'flex-start',
-              }}
-            >
-              {video.thumbnail_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={video.thumbnail_url}
-                  alt={video.title ?? 'Video thumbnail'}
-                  style={{ width: '120px', height: '68px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }}
-                />
-              )}
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontWeight: 600 }}>{video.title ?? '(Untitled)'}</p>
-                <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#5A5A5A' }}>
-                  Position {video.position ?? '?'}
-                  {tag && ` · ${tag.name}`}
-                  {video.level && ` · ${video.level}`}
-                </p>
-                <a
-                  href={video.youtube_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ fontSize: '0.85rem', color: '#6F7F75' }}
+            <Card key={video.id}>
+              <div className="flex gap-3 items-start">
+                {video.thumbnail_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={video.thumbnail_url}
+                    alt={video.title ?? 'Video thumbnail'}
+                    className="w-32 h-20 object-cover rounded-md flex-shrink-0"
+                  />
+                )}
+                <div className="flex-1">
+                  <p className="font-medium text-ink m-0">{video.title ?? '(Untitled)'}</p>
+                  <p className="text-sm text-muted-text mt-1 m-0">
+                    Position {video.position ?? '?'}
+                    {tag && ` · ${tag.name}`}
+                    {video.level && ` · ${video.level}`}
+                  </p>
+                  <a
+                    href={video.youtube_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm text-studio-sage hover:underline mt-1 inline-block"
+                  >
+                    View on YouTube ↗
+                  </a>
+                </div>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => handleDelete(video.id)}
+                  loading={deletingId === video.id}
                 >
-                  View on YouTube ↗
-                </a>
+                  Delete
+                </Button>
               </div>
-              <button
-                onClick={() => handleDelete(video.id)}
-                disabled={deletingId === video.id}
-                style={{
-                  padding: '0.3rem 0.75rem',
-                  fontSize: '0.85rem',
-                  background: '#c0392b',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: deletingId === video.id ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {deletingId === video.id ? '...' : 'Delete'}
-              </button>
-            </article>
+            </Card>
           )
         })}
       </div>
 
       {maxReached ? (
-        <p style={{ padding: '1rem', background: '#F7F4EF', border: '1px solid #EAE4DB', borderRadius: '8px' }}>
-          You have reached the maximum of 3 featured videos.
-        </p>
+        <Card>
+          <p className="text-muted-text m-0">You have reached the maximum of 3 featured videos.</p>
+        </Card>
       ) : (
-        <section style={{ border: '1px solid #D6CFC6', borderRadius: '8px', padding: '1rem', background: '#F7F4EF' }}>
-          <h2 style={{ marginTop: 0 }}>Add a video</h2>
-          <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div>
-              <label htmlFor="youtube_url">YouTube URL</label>
-              <input
-                id="youtube_url"
-                type="url"
-                required
-                value={youtubeUrl}
-                onChange={e => setYoutubeUrl(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=..."
-                style={inputStyle}
-              />
-            </div>
+        <Card>
+          <h2 className="font-display text-xl text-ink m-0 mb-4">Add a video</h2>
+          <form onSubmit={handleAdd} className="flex flex-col gap-3">
+            <Input
+              id="youtube_url"
+              type="url"
+              label="YouTube URL"
+              required
+              value={youtubeUrl}
+              onChange={e => setYoutubeUrl(e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
 
-            <div>
-              <label htmlFor="tag_id">Tag</label>
-              <select
-                id="tag_id"
-                required
-                value={tagId}
-                onChange={e => setTagId(e.target.value)}
-                style={inputStyle}
-              >
-                <option value="">Select a tag</option>
-                {tags.map(t => (
-                  <option key={t.id} value={t.id}>
-                    {t.category} — {t.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="level">Level</label>
-              <select
-                id="level"
-                value={level}
-                onChange={e => setLevel(e.target.value as Level)}
-                style={inputStyle}
-              >
-                {LEVELS.map(l => (
-                  <option key={l} value={l}>
-                    {l}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              disabled={adding || !youtubeUrl || !tagId}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#6F7F75',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: adding || !youtubeUrl || !tagId ? 'not-allowed' : 'pointer',
-                alignSelf: 'flex-start',
-              }}
+            <Select
+              id="tag_id"
+              label="Tag"
+              required
+              value={tagId}
+              onChange={e => setTagId(e.target.value)}
             >
-              {adding ? 'Adding...' : 'Add video'}
-            </button>
+              <option value="">Select a tag</option>
+              {tags.map(t => (
+                <option key={t.id} value={t.id}>
+                  {t.category} — {t.name}
+                </option>
+              ))}
+            </Select>
+
+            <Select
+              id="level"
+              label="Level"
+              value={level}
+              onChange={e => setLevel(e.target.value as Level)}
+            >
+              {LEVELS.map(l => (
+                <option key={l} value={l}>{l}</option>
+              ))}
+            </Select>
+
+            <Button
+              type="submit"
+              variant="primary"
+              loading={adding}
+              disabled={!youtubeUrl || !tagId}
+              className="self-start"
+            >
+              Add video
+            </Button>
           </form>
-        </section>
+        </Card>
       )}
     </div>
   )

@@ -1,6 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import CourseForm from '../../CourseForm'
+import DashboardShell from '@/components/layout/DashboardShell'
+
+const navItems = [
+  { label: 'Profile', href: '/dashboard/creator/profile' },
+  { label: 'Courses', href: '/dashboard/creator/courses' },
+  { label: 'Videos', href: '/dashboard/creator/videos' },
+]
 
 export default async function EditCoursePage({
   params,
@@ -36,9 +43,10 @@ export default async function EditCoursePage({
     .order('name', { ascending: true })
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '700px', margin: '0 auto' }}>
-      <a href="/dashboard/creator/courses" style={{ fontSize: '0.9rem', color: '#6F7F75' }}>← Back to courses</a>
-      <h1 style={{ marginTop: '1rem' }}>Edit course</h1>
+    <DashboardShell title="Edit course" navItems={navItems} userEmail={user.email ?? undefined}>
+      <a href="/dashboard/creator/courses" className="text-sm text-studio-sage hover:underline mb-4 inline-block">
+        ← Back to courses
+      </a>
       <CourseForm
         mode="edit"
         courseId={course.id}
@@ -52,6 +60,6 @@ export default async function EditCoursePage({
         allTags={allTags ?? []}
         selectedTagIds={selectedTagIds}
       />
-    </main>
+    </DashboardShell>
   )
 }

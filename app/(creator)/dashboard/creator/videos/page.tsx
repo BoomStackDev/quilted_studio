@@ -1,6 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import VideoManager from './VideoManager'
+import DashboardShell from '@/components/layout/DashboardShell'
+
+const navItems = [
+  { label: 'Profile', href: '/dashboard/creator/profile' },
+  { label: 'Courses', href: '/dashboard/creator/courses' },
+  { label: 'Videos', href: '/dashboard/creator/videos' },
+]
 
 export default async function VideosPage() {
   const supabase = await createClient()
@@ -23,11 +30,12 @@ export default async function VideosPage() {
   ])
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <a href="/dashboard/creator" style={{ fontSize: '0.9rem', color: '#6F7F75' }}>← Back to dashboard</a>
-      <h1 style={{ marginTop: '1rem' }}>Featured videos</h1>
-      <p style={{ color: '#5A5A5A' }}>Pick up to 3 YouTube videos to feature on your public profile.</p>
+    <DashboardShell title="Featured videos" navItems={navItems} userEmail={user.email ?? undefined}>
+      <a href="/dashboard/creator" className="text-sm text-studio-sage hover:underline mb-4 inline-block">
+        ← Back to dashboard
+      </a>
+      <p className="text-muted-text mb-6">Pick up to 3 YouTube videos to feature on your public profile.</p>
       <VideoManager initialVideos={videos ?? []} tags={tags ?? []} />
-    </main>
+    </DashboardShell>
   )
 }

@@ -3,6 +3,10 @@
 import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Database } from '@/types/supabase'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
+import Input from '@/components/ui/Input'
+import Textarea from '@/components/ui/Textarea'
 
 type Creator = Database['public']['Tables']['creators']['Row']
 type Tag = Database['public']['Tables']['specialty_tags']['Row']
@@ -106,107 +110,86 @@ export default function ProfileForm({ creator, selectedTagIds, allTags, userId }
     setSaving(false)
   }
 
-  const inputStyle: React.CSSProperties = {
-    display: 'block',
-    width: '100%',
-    padding: '0.5rem',
-    marginTop: '0.25rem',
-  }
-
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-      <div>
-        <label htmlFor="display_name">Display name *</label>
-        <input
-          id="display_name"
-          type="text"
-          required
-          value={displayName}
-          onChange={e => setDisplayName(e.target.value)}
-          style={inputStyle}
-        />
-      </div>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <Input
+        id="display_name"
+        label="Display name *"
+        required
+        value={displayName}
+        onChange={e => setDisplayName(e.target.value)}
+      />
 
-      <div>
-        <label htmlFor="tagline">Tagline</label>
-        <input
-          id="tagline"
-          type="text"
-          value={tagline}
-          onChange={e => setTagline(e.target.value)}
-          style={inputStyle}
-        />
-      </div>
+      <Input
+        id="tagline"
+        label="Tagline"
+        value={tagline}
+        onChange={e => setTagline(e.target.value)}
+      />
 
-      <div>
-        <label htmlFor="bio">Bio</label>
-        <textarea
-          id="bio"
-          rows={5}
-          value={bio}
-          onChange={e => setBio(e.target.value)}
-          style={inputStyle}
-        />
-      </div>
+      <Textarea
+        id="bio"
+        label="Bio"
+        rows={5}
+        value={bio}
+        onChange={e => setBio(e.target.value)}
+      />
 
-      <div>
-        <label>Profile photo</label>
+      <Card>
+        <p className="text-sm font-medium text-ink mb-2">Profile photo</p>
         {photoUrl && (
-          <div style={{ marginTop: '0.5rem' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photoUrl} alt="Profile" style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '8px' }} />
-          </div>
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photoUrl}
+            alt="Profile"
+            className="w-32 h-32 rounded-lg object-cover mb-3 border border-soft-border"
+          />
         )}
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handlePhotoChange}
-          disabled={photoUploading}
-          style={{ marginTop: '0.5rem' }}
-        />
-        {photoUploading && <p style={{ fontSize: '0.9rem', color: '#5A5A5A' }}>Uploading...</p>}
-      </div>
+        <label className="inline-block">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoChange}
+            disabled={photoUploading}
+            className="hidden"
+          />
+          <span className="inline-flex items-center justify-center font-medium transition-all cursor-pointer bg-white text-ink border border-soft-border hover:bg-paper-warm-gray px-4 py-2 text-sm rounded-lg">
+            {photoUploading ? 'Uploading...' : photoUrl ? 'Change photo' : 'Upload photo'}
+          </span>
+        </label>
+      </Card>
+
+      <Input
+        id="youtube_url"
+        type="url"
+        label="YouTube URL"
+        value={youtubeUrl}
+        onChange={e => setYoutubeUrl(e.target.value)}
+      />
+
+      <Input
+        id="instagram_url"
+        type="url"
+        label="Instagram URL"
+        value={instagramUrl}
+        onChange={e => setInstagramUrl(e.target.value)}
+      />
+
+      <Input
+        id="website_url"
+        type="url"
+        label="Website URL"
+        value={websiteUrl}
+        onChange={e => setWebsiteUrl(e.target.value)}
+      />
 
       <div>
-        <label htmlFor="youtube_url">YouTube URL</label>
-        <input
-          id="youtube_url"
-          type="url"
-          value={youtubeUrl}
-          onChange={e => setYoutubeUrl(e.target.value)}
-          style={inputStyle}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="instagram_url">Instagram URL</label>
-        <input
-          id="instagram_url"
-          type="url"
-          value={instagramUrl}
-          onChange={e => setInstagramUrl(e.target.value)}
-          style={inputStyle}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="website_url">Website URL</label>
-        <input
-          id="website_url"
-          type="url"
-          value={websiteUrl}
-          onChange={e => setWebsiteUrl(e.target.value)}
-          style={inputStyle}
-        />
-      </div>
-
-      <div>
-        <label>Specialty tags</label>
-        <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <p className="text-sm font-medium text-ink mb-2">Specialty tags</p>
+        <div className="flex flex-col gap-3">
           {Object.entries(tagsByCategory).map(([category, tags]) => (
             <div key={category}>
-              <p style={{ margin: '0 0 0.25rem', fontSize: '0.85rem', color: '#5A5A5A' }}>{category}</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <p className="text-xs text-muted-text mb-1.5">{category}</p>
+              <div className="flex flex-wrap gap-2">
                 {tags.map(tag => {
                   const isSelected = selected.has(tag.id)
                   return (
@@ -214,15 +197,11 @@ export default function ProfileForm({ creator, selectedTagIds, allTags, userId }
                       type="button"
                       key={tag.id}
                       onClick={() => toggleTag(tag.id)}
-                      style={{
-                        padding: '0.25rem 0.75rem',
-                        border: `1px solid ${isSelected ? '#6F7F75' : '#D6CFC6'}`,
-                        borderRadius: '9999px',
-                        background: isSelected ? '#6F7F75' : 'white',
-                        color: isSelected ? 'white' : '#1F1F1F',
-                        fontSize: '0.85rem',
-                        cursor: 'pointer',
-                      }}
+                      className={`rounded-full px-3 py-1 text-sm border transition-colors cursor-pointer ${
+                        isSelected
+                          ? 'bg-studio-sage text-white border-studio-sage'
+                          : 'bg-white text-muted-text border-soft-border hover:border-studio-sage'
+                      }`}
                     >
                       {tag.name}
                     </button>
@@ -231,29 +210,23 @@ export default function ProfileForm({ creator, selectedTagIds, allTags, userId }
               </div>
             </div>
           ))}
-          {allTags.length === 0 && <p style={{ fontSize: '0.9rem', color: '#5A5A5A' }}>No tags available yet.</p>}
+          {allTags.length === 0 && <p className="text-sm text-muted-text">No tags available yet.</p>}
         </div>
       </div>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {success && <p style={{ color: '#2e7d32' }}>Profile saved.</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      {success && <p className="text-sm text-green-700">Profile saved.</p>}
 
-      <button
+      <Button
         type="submit"
-        disabled={saving || photoUploading}
-        style={{
-          padding: '0.75rem 1.5rem',
-          background: '#6F7F75',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: saving || photoUploading ? 'not-allowed' : 'pointer',
-          fontSize: '1rem',
-          alignSelf: 'flex-start',
-        }}
+        variant="primary"
+        size="lg"
+        loading={saving}
+        disabled={photoUploading}
+        className="self-start"
       >
-        {saving ? 'Saving...' : 'Save profile'}
-      </button>
+        Save profile
+      </Button>
     </form>
   )
 }

@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
 
 type ChecklistData = {
   profileComplete: boolean
@@ -19,8 +21,14 @@ const statusLabels: Record<string, string> = {
   changes_requested: 'Changes requested — see feedback below',
 }
 
+const statusBannerClasses: Record<string, string> = {
+  approved: 'bg-green-50 border-green-200',
+  changes_requested: 'bg-yellow-50 border-yellow-200',
+  rejected: 'bg-red-50 border-red-200',
+}
+
 export default function OnboardingChecklist({ data }: { data: ChecklistData }) {
-  const [commissionConfirmed, setCommissionConfirmed] = useState(data.commissionConfirmed)
+  const commissionConfirmed = data.commissionConfirmed
   const [submitLoading, setSubmitLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(
@@ -47,24 +55,26 @@ export default function OnboardingChecklist({ data }: { data: ChecklistData }) {
     setSubmitLoading(false)
   }
 
+  const bannerClass = statusBannerClasses[data.status] ?? ''
+
   return (
     <div>
-      <div style={{ background: '#F7F4EF', border: '1px solid #D6CFC6', borderRadius: '8px', padding: '1rem', marginBottom: '1.5rem' }}>
-        <p style={{ margin: 0, fontWeight: 600 }}>
+      <Card className={`mb-6 ${bannerClass}`}>
+        <p className="font-medium text-ink m-0">
           Status: {statusLabels[data.status] ?? data.status}
         </p>
-      </div>
+      </Card>
 
       {data.status === 'changes_requested' && data.feedbackForCreator && (
-        <div style={{ background: '#fff3cd', border: '1px solid #ffc107', borderRadius: '8px', padding: '1rem', marginBottom: '1.5rem' }}>
-          <p style={{ margin: 0, fontWeight: 600 }}>Feedback from Dave:</p>
-          <p style={{ margin: '0.5rem 0 0' }}>{data.feedbackForCreator}</p>
-        </div>
+        <Card className="mb-6 bg-yellow-50 border-yellow-200">
+          <p className="font-medium text-ink m-0">Feedback from Dave:</p>
+          <p className="text-ink mt-2 m-0">{data.feedbackForCreator}</p>
+        </Card>
       )}
 
-      <h2>Onboarding checklist</h2>
+      <h2 className="font-display text-2xl text-ink mb-4">Onboarding checklist</h2>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+      <div className="flex flex-col gap-3 mb-6">
         <ChecklistItem
           complete={data.profileComplete}
           label="Complete your profile"
@@ -97,30 +107,18 @@ export default function OnboardingChecklist({ data }: { data: ChecklistData }) {
         />
       </div>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
       {canSubmit && !submitted && (
-        <button
-          onClick={handleSubmitForReview}
-          disabled={submitLoading}
-          style={{
-            padding: '0.75rem 1.5rem',
-            background: '#6F7F75',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: submitLoading ? 'not-allowed' : 'pointer',
-            fontSize: '1rem',
-          }}
-        >
-          {submitLoading ? 'Submitting...' : 'Submit for review'}
-        </button>
+        <Button variant="primary" size="lg" loading={submitLoading} onClick={handleSubmitForReview}>
+          Submit for review
+        </Button>
       )}
 
       {data.status === 'approved' && (
-        <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#e8f5e9', border: '1px solid #a5d6a7', borderRadius: '8px' }}>
-          <p style={{ margin: 0 }}>✓ Your profile is live and visible in the directory.</p>
-        </div>
+        <Card className="mt-6 bg-green-50 border-green-200">
+          <p className="m-0 text-ink">✓ Your profile is live and visible in the directory.</p>
+        </Card>
       )}
     </div>
   )
@@ -140,43 +138,25 @@ type ChecklistItemProps = {
 
 function ChecklistItem({ complete, label, description, action }: ChecklistItemProps) {
   return (
-    <div style={{
-      display: 'flex',
-      gap: '0.75rem',
-      padding: '0.75rem',
-      border: `1px solid ${complete ? '#a5d6a7' : '#D6CFC6'}`,
-      borderRadius: '8px',
-      background: complete ? '#e8f5e9' : '#FFFFFF',
-    }}>
-      <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>{complete ? '✓' : '○'}</span>
-      <div style={{ flex: 1 }}>
-        <p style={{ margin: 0, fontWeight: 600 }}>{label}</p>
-        <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem', color: '#5A5A5A' }}>{description}</p>
-        {action && !complete && (
-          action.href ? (
-            <a href={action.href} style={{ display: 'inline-block', marginTop: '0.5rem', fontSize: '0.9rem', color: '#6F7F75' }}>
-              {action.label} →
-            </a>
-          ) : (
-            <button
-              onClick={action.onClick}
-              disabled={action.disabled}
-              style={{
-                marginTop: '0.5rem',
-                padding: '0.25rem 0.75rem',
-                fontSize: '0.9rem',
-                background: '#6B7C93',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: action.disabled ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {action.label}
-            </button>
-          )
-        )}
+    <Card className={complete ? 'border-green-200 bg-green-50' : ''}>
+      <div className="flex gap-3">
+        <span className="text-xl leading-none text-studio-sage">{complete ? '✓' : '○'}</span>
+        <div className="flex-1">
+          <p className="font-medium text-ink m-0">{label}</p>
+          <p className="text-sm text-muted-text mt-1 m-0">{description}</p>
+          {action && !complete && (
+            action.href ? (
+              <a href={action.href} className="inline-block mt-2 text-sm text-studio-sage hover:underline">
+                {action.label} →
+              </a>
+            ) : (
+              <Button variant="secondary" size="sm" className="mt-2" onClick={action.onClick} disabled={action.disabled}>
+                {action.label}
+              </Button>
+            )
+          )}
+        </div>
       </div>
-    </div>
+    </Card>
   )
 }

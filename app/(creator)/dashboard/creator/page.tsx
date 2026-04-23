@@ -1,6 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import OnboardingChecklist from './OnboardingChecklist'
+import DashboardShell from '@/components/layout/DashboardShell'
+
+const navItems = [
+  { label: 'Profile', href: '/dashboard/creator/profile' },
+  { label: 'Courses', href: '/dashboard/creator/courses' },
+  { label: 'Videos', href: '/dashboard/creator/videos' },
+]
 
 export default async function CreatorDashboardPage() {
   const supabase = await createClient()
@@ -32,15 +39,8 @@ export default async function CreatorDashboardPage() {
   }
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '700px', margin: '0 auto' }}>
-      <h1>Creator Dashboard</h1>
-      <p style={{ color: '#5A5A5A' }}>{user.email}</p>
-      <nav style={{ margin: '0 0 1rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', fontSize: '0.9rem' }}>
-        <a href="/dashboard/creator/profile" style={{ color: '#6F7F75' }}>Profile →</a>
-        <a href="/dashboard/creator/courses" style={{ color: '#6F7F75' }}>Courses →</a>
-        <a href="/dashboard/creator/videos" style={{ color: '#6F7F75' }}>Videos →</a>
-      </nav>
+    <DashboardShell title="Creator Dashboard" navItems={navItems} userEmail={user.email ?? undefined}>
       <OnboardingChecklist data={checklistData} />
-    </main>
+    </DashboardShell>
   )
 }

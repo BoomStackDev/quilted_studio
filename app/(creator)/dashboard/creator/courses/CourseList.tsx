@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import type { Database } from '@/types/supabase'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import Badge from '@/components/ui/Badge'
 
 type Course = Database['public']['Tables']['courses']['Row']
 type AffiliatedLink = Database['public']['Tables']['affiliated_links']['Row']
@@ -37,99 +40,74 @@ export default function CourseList({ initialCourses }: { initialCourses: CourseW
 
   if (courses.length === 0) {
     return (
-      <div style={{ marginTop: '2rem', padding: '2rem', textAlign: 'center', border: '1px dashed #D6CFC6', borderRadius: '8px' }}>
-        <p style={{ margin: 0, color: '#5A5A5A' }}>No courses yet. Add your first affiliated course.</p>
-      </div>
+      <Card className="text-center">
+        <p className="text-muted-text m-0">No courses yet. Add your first affiliated course.</p>
+      </Card>
     )
   }
 
   return (
-    <div style={{ marginTop: '1.5rem' }}>
-      {error && <p style={{ color: 'red', marginBottom: '1rem' }}>{error}</p>}
+    <div className="flex flex-col gap-3">
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       {courses.map(course => {
         const link = course.affiliated_links?.[0]
         const trackingUrl = link ? `${SITE_URL}/go/${link.slug}` : '—'
 
         return (
-          <article
-            key={course.id}
-            style={{
-              border: '1px solid #D6CFC6',
-              borderRadius: '8px',
-              padding: '1rem',
-              marginBottom: '1rem',
-              background: 'white',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start' }}>
-              <div style={{ flex: 1 }}>
-                <h3 style={{ margin: 0 }}>{course.title}</h3>
+          <Card key={course.id} className="hover:shadow-md transition-shadow">
+            <div className="flex justify-between gap-4 items-start">
+              <div className="flex-1">
+                <h3 className="font-display text-xl text-ink m-0">{course.title}</h3>
                 {course.tagline && (
-                  <p style={{ margin: '0.25rem 0 0', color: '#5A5A5A' }}>{course.tagline}</p>
+                  <p className="text-muted-text mt-1 m-0">{course.tagline}</p>
                 )}
-                <div style={{ marginTop: '0.75rem', fontSize: '0.85rem' }}>
-                  {course.level && (
-                    <span style={{ marginRight: '1rem', color: '#5A5A5A' }}>Level: {course.level}</span>
-                  )}
-                  <span style={{ color: '#5A5A5A' }}>
-                    Status: {course.published ? 'Published' : 'Draft'}
-                  </span>
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  {course.level && <Badge variant="gray">{course.level}</Badge>}
+                  <Badge variant={course.published ? 'green' : 'yellow'}>
+                    {course.published ? 'Published' : 'Draft'}
+                  </Badge>
                 </div>
                 {course.external_url && (
-                  <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem' }}>
-                    Destination: <a href={course.external_url} target="_blank" rel="noreferrer" style={{ color: '#6F7F75' }}>{course.external_url}</a>
+                  <p className="mt-2 text-sm text-muted-text m-0">
+                    Destination:{' '}
+                    <a
+                      href={course.external_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-studio-sage hover:underline"
+                    >
+                      {course.external_url}
+                    </a>
                   </p>
                 )}
                 {link && (
-                  <div
-                    style={{
-                      marginTop: '0.75rem',
-                      padding: '0.5rem 0.75rem',
-                      background: '#F7F4EF',
-                      border: '1px solid #EAE4DB',
-                      borderRadius: '6px',
-                      fontSize: '0.85rem',
-                    }}
-                  >
-                    <strong>Tracking URL:</strong>{' '}
-                    <code style={{ fontSize: '0.85rem' }}>{trackingUrl}</code>
-                  </div>
+                  <p className="mt-2 text-sm text-ink m-0">
+                    Tracking URL:{' '}
+                    <span className="bg-paper-warm-gray px-2 py-1 rounded text-xs font-mono">
+                      {trackingUrl}
+                    </span>
+                  </p>
                 )}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div className="flex flex-col gap-2 flex-shrink-0">
                 <a
                   href={`/dashboard/creator/courses/${course.id}/edit`}
-                  style={{
-                    padding: '0.3rem 0.75rem',
-                    textAlign: 'center',
-                    fontSize: '0.85rem',
-                    background: '#6B7C93',
-                    color: 'white',
-                    borderRadius: '6px',
-                    textDecoration: 'none',
-                  }}
+                  className="no-underline hover:no-underline"
                 >
-                  Edit
+                  <Button variant="secondary" size="sm">Edit</Button>
                 </a>
-                <button
+                <Button
+                  variant="danger"
+                  size="sm"
                   onClick={() => handleDelete(course.id)}
-                  disabled={deletingId === course.id}
-                  style={{
-                    padding: '0.3rem 0.75rem',
-                    fontSize: '0.85rem',
-                    background: '#c0392b',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: deletingId === course.id ? 'not-allowed' : 'pointer',
-                  }}
+                  loading={deletingId === course.id}
                 >
-                  {deletingId === course.id ? '...' : 'Delete'}
-                </button>
+                  Delete
+                </Button>
               </div>
             </div>
-          </article>
+          </Card>
         )
       })}
     </div>

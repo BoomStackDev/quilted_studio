@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
 
 export default function CommissionSetupForm() {
   const router = useRouter()
@@ -26,39 +28,32 @@ export default function CommissionSetupForm() {
   }
 
   return (
-    <div style={{ marginTop: '1rem' }}>
-      <label style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', cursor: 'pointer' }}>
+    <Card>
+      <label className="flex gap-3 items-start cursor-pointer">
         <input
           type="checkbox"
           checked={checked}
           onChange={e => setChecked(e.target.checked)}
-          style={{ marginTop: '0.2rem', width: '1rem', height: '1rem' }}
+          className="mt-1 w-4 h-4 accent-studio-sage cursor-pointer"
         />
-        <span>
-          I have set up {' '}
-          <strong>affiliates@quilted.studio</strong>
-          {' '} as an affiliate in my platform with a minimum <strong>90-day cookie duration</strong>.
+        <span className="text-ink">
+          I have set up <strong>affiliates@quilted.studio</strong> as an affiliate in my
+          platform with a minimum <strong>90-day cookie duration</strong>.
         </span>
       </label>
 
-      {error && <p style={{ color: 'red', marginTop: '0.5rem' }}>{error}</p>}
+      {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
 
-      <button
-        onClick={handleConfirm}
-        disabled={!checked || loading}
-        style={{
-          marginTop: '1rem',
-          padding: '0.75rem 1.5rem',
-          background: checked ? '#6F7F75' : '#ccc',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: !checked || loading ? 'not-allowed' : 'pointer',
-          fontSize: '1rem',
-        }}
-      >
-        {loading ? 'Saving...' : 'Confirm and return to dashboard'}
-      </button>
-    </div>
+      <div className="mt-4">
+        <Button
+          variant="primary"
+          onClick={handleConfirm}
+          loading={loading}
+          disabled={!checked}
+        >
+          Confirm and return to dashboard
+        </Button>
+      </div>
+    </Card>
   )
 }
