@@ -26,11 +26,14 @@ export default function AuthCallbackPage() {
       const type = params.get('type') as EmailOtpType | null
 
       let userId: string | null = null
+      let verifyErrorMessage: string | null = null
 
       if (token_hash && type) {
         const { data, error } = await supabase.auth.verifyOtp({ token_hash, type })
-        if (!error && data.user) {
-          userId = data.user.id
+        if (error) {
+          verifyErrorMessage = error.message
+        } else if (data.session?.user) {
+          userId = data.session.user.id
         }
       }
 
@@ -42,7 +45,10 @@ export default function AuthCallbackPage() {
       if (cancelled) return
 
       if (!userId) {
-        router.replace('/auth/signin?error=auth_failed')
+        const code = verifyErrorMessage?.toLowerCase().includes('expired')
+          ? 'link_expired'
+          : 'auth_failed'
+        router.replace(`/auth/signin?error=${code}`)
         return
       }
 
