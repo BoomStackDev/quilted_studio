@@ -157,10 +157,10 @@ export default function StudentDashboard({ clicks, savedCourseIds, savedCourses 
       )}
 
       <section className="mb-8">
-        <h2 className="font-display text-2xl text-ink mb-4 mt-8">My Other Courses</h2>
+        <h2 className="font-display text-2xl text-ink mb-4 mt-8">My Courses</h2>
         {mine.length === 0 ? (
           <Card className="text-muted-text text-center py-8">
-            Courses you purchase through Quilted Studio will appear here.
+            Browse the directory to find courses. Courses you save will appear here.
           </Card>
         ) : (
           <div className="flex flex-col gap-3">
