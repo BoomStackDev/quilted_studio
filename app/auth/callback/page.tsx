@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import type { Session } from '@supabase/supabase-js'
+import type { EmailOtpType } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import PageShell from '@/components/ui/PageShell'
 
@@ -18,16 +18,30 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const supabase = createClient()
     let cancelled = false
-    let settled = false
 
-    async function finish(session: Session | null) {
-      if (cancelled || settled) return
-      settled = true
-
+    async function run() {
       const params = new URLSearchParams(window.location.search)
       const next = safeNext(params.get('next'))
+      const token_hash = params.get('token_hash')
+      const type = params.get('type') as EmailOtpType | null
 
-      if (!session?.user) {
+      let userId: string | null = null
+
+      if (token_hash && type) {
+        const { data, error } = await supabase.auth.verifyOtp({ token_hash, type })
+        if (!error && data.user) {
+          userId = data.user.id
+        }
+      }
+
+      if (!userId) {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) userId = session.user.id
+      }
+
+      if (cancelled) return
+
+      if (!userId) {
         router.replace('/auth/signin?error=auth_failed')
         return
       }
@@ -42,28 +56,10 @@ export default function AuthCallbackPage() {
       router.replace(next)
     }
 
-    // Fires when the browser SDK finishes processing the #access_token= hash
-    // (event: 'SIGNED_IN'). Also fires with INITIAL_SESSION which we ignore
-    // unless it already has a session.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
-        finish(session)
-      }
-    })
-
-    // Covers the race where the hash was processed before we subscribed —
-    // SIGNED_IN would not fire again.
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) finish(session)
-    })
-
-    // Give the SDK up to 5s to process the hash; otherwise treat as failure.
-    const timeout = setTimeout(() => finish(null), 5000)
+    run()
 
     return () => {
       cancelled = true
-      subscription.unsubscribe()
-      clearTimeout(timeout)
     }
   }, [router])
 
