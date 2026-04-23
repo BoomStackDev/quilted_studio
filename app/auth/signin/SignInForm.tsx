@@ -1,22 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
 
-function safeNext(raw: string | null): string | null {
-  if (!raw) return null
-  if (!raw.startsWith('/') || raw.startsWith('//')) return null
-  return raw
-}
-
 export default function SignInForm() {
-  const searchParams = useSearchParams()
-  const next = safeNext(searchParams.get('next'))
-
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
@@ -27,9 +17,7 @@ export default function SignInForm() {
     setLoading(true)
     setError(null)
 
-    const callbackUrl = next
-      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
-      : `${window.location.origin}/auth/callback`
+    const callbackUrl = `${window.location.origin}/auth/callback`
 
     const supabase = createClient()
     const { error: otpError } = await supabase.auth.signInWithOtp({
